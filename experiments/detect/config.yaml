@@ -1,0 +1,38 @@
+model:
+  path: /public/home/yujzh1/LLM-Injection/activation_additions/models/gemma-2-2b-it
+
+mitigation:
+  train_ratio: 0.75
+  detection_length: 400
+  MLP_cfg:
+    model:
+      layers:
+        # implicit: one first linear layer from input dimension to the input size of the first hidden layer
+        # second layer:
+        - type: Linear
+          input_size: 120
+          output_size: 30
+        - type: LayerNorm
+          normalized_shape: 30
+        - type: ReLU
+
+        - type: Linear
+          input_size: 30
+          output_size: 10
+        - type: LayerNorm
+          normalized_shape: 10
+        - type: ReLU
+
+        - type: Linear
+          input_size: 10
+          output_size: 1
+        - type: Sigmoid
+
+    training:
+      batch_size: 400
+      epochs: 500
+      learning_rate: 0.0001
+      weight_decay: 0.02
+      use_scheduler: true
+
+      class_weights: [1000.0, 1.0] # focus on reducing false positives
